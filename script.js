@@ -27,7 +27,6 @@ function draw(){
             canvas.height
         )
     }
-    
 }
 
 // comando para iniciar o jogo ao clicar enter
@@ -38,9 +37,12 @@ document.addEventListener("keydown", (event) => {
     }
 })
 
-// função que faz o jogo iniciar
-function startGame(){
-    if (gameStatus == "playing"){
+const player = new Player(ctx);
+
+function gameLoop(){
+    ctx.clearRect( 0, 0, canvas.width, canvas.height);
+
+    if(roundImage.complete && roundImage.naturalWidth > 0){
         ctx.drawImage(
             roundImage,
             0,
@@ -49,5 +51,14 @@ function startGame(){
             canvas.height
         )
     }
+
+    player.drawPlayer();
+    requestAnimationFrame(gameLoop);
 }
 
+// função que faz o jogo iniciar
+function startGame(){
+    if(gameStatus === "playing"){
+        gameLoop();
+    }
+}
