@@ -4,7 +4,7 @@ const ctx = canvas.getContext("2d");
 // nesta parte, criamos um objeto de imagem que pega a imagem do menu e do round
 const menuImage = new Image();
 const roundImage = new Image();
-menuImage.src = "./assets/menu-bg.png";
+menuImage.src = "./assets/menu.png";
 roundImage.src = "./assets/cenario.png";
 
 let gameStatus = "menu";
