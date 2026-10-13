@@ -7,12 +7,14 @@ const roundImage = new Image();
 menuImage.src = "./assets/menu.png";
 roundImage.src = "./assets/cenario.png";
 
+// aqui é o status padrão sempre que iniciar o site (aparecendo o menu)
 let gameStatus = "menu";
 
 menuImage.onload = function (){
     draw();
 }
 
+// essa função desenha a imagem cobrindo todo o canvas
 function draw(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -28,6 +30,7 @@ function draw(){
     
 }
 
+// comando para iniciar o jogo ao clicar enter
 document.addEventListener("keydown", (event) => {
     if(event.key === "Enter" && gameStatus === "menu"){
         gameStatus = "playing";
@@ -35,6 +38,7 @@ document.addEventListener("keydown", (event) => {
     }
 })
 
+// função que faz o jogo iniciar
 function startGame(){
     if (gameStatus == "playing"){
         ctx.drawImage(
