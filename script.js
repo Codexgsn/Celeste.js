@@ -1,18 +1,27 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
+
+
 // nesta parte, criamos um objeto de imagem que pega a imagem do menu e do round
 const menuImage = new Image();
 const roundImage = new Image();
 menuImage.src = "./assets/menu.png";
 roundImage.src = "./assets/cenario.png";
 
+
+
+
 // aqui é o status padrão sempre que iniciar o site (aparecendo o menu)
 let gameStatus = "menu";
+
+
 
 menuImage.onload = function (){
     draw();
 }
+
+
 
 // essa função desenha a imagem cobrindo todo o canvas
 function draw(){
@@ -29,6 +38,9 @@ function draw(){
     }
 }
 
+
+
+
 // comando para iniciar o jogo ao clicar enter
 document.addEventListener("keydown", (event) => {
     if(event.key === "Enter" && gameStatus === "menu"){
@@ -37,8 +49,19 @@ document.addEventListener("keydown", (event) => {
     }
 })
 
-const player = new Player(ctx);
 
+
+const player = new Player();
+
+document.addEventListener("keydown", (event) => {
+    player.keys[event.key] = true;
+});
+
+document.addEventListener("keyup", (event) => {
+    player.keys[event.key] = false;
+})
+
+// função que faz o gameloop
 function gameLoop(){
     ctx.clearRect( 0, 0, canvas.width, canvas.height);
 
@@ -52,9 +75,14 @@ function gameLoop(){
         )
     }
 
+    player.updatePlayer();
     player.drawPlayer();
     requestAnimationFrame(gameLoop);
 }
+
+
+
+
 
 // função que faz o jogo iniciar
 function startGame(){
