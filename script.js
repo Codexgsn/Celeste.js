@@ -1,4 +1,7 @@
 const canvas = document.getElementById("canvas");
+// Define a resolução interna do jogo; o CSS pode redimensionar a exibição sem mudar a física.
+canvas.width = 1200;
+canvas.height = 720;
 const ctx = canvas.getContext("2d");
 
 
@@ -52,6 +55,45 @@ document.addEventListener("keydown", (event) => {
 
 
 const player = new Player();
+let platforms = [];
+let phaseReady = false;
+
+// Carrega os retângulos desenhados na camada "Colisoes" do mapa do Tiled.
+fetch("./assets/fase1.json")
+    .then((response) => {
+        if (!response.ok) {
+            throw new Error("Não foi possível carregar fase1.json");
+        }
+        return response.json();
+    })
+    .then((map) => {
+        const sceneLayer = map.layers.find((layer) => layer.name === "Cenario");
+        const collisionLayer = map.layers.find((layer) => layer.name === "Colisoes");
+
+        if (!sceneLayer || !collisionLayer) {
+            throw new Error("O mapa precisa das camadas Cenario e Colisoes");
+        }
+
+        const scaleX = canvas.width / sceneLayer.imagewidth;
+        const scaleY = canvas.height / sceneLayer.imageheight;
+
+        // Converte as coordenadas da imagem original para as coordenadas do canvas.
+        platforms = collisionLayer.objects.map((object) => ({
+            x: object.x * scaleX,
+            y: object.y * scaleY,
+            width: object.width * scaleX,
+            height: object.height * scaleY
+        }));
+
+        // Só inicia o jogo depois que as colisões da fase estiverem prontas.
+        phaseReady = true;
+        if (gameStatus === "playing") {
+            startGame();
+        }
+    })
+    .catch((error) => console.error("Erro ao carregar a fase:", error));
+
+
 
 document.addEventListener("keydown", (event) => {
     player.keys[event.key] = true;
@@ -75,7 +117,7 @@ function gameLoop(){
         )
     }
 
-    player.updatePlayer();
+    player.updatePlayer(platforms);
     player.drawPlayer();
     requestAnimationFrame(gameLoop);
 }
@@ -86,7 +128,7 @@ function gameLoop(){
 
 // função que faz o jogo iniciar
 function startGame(){
-    if(gameStatus === "playing"){
+    if(gameStatus === "playing" && phaseReady){
         gameLoop();
     }
 }
