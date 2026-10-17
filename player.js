@@ -3,7 +3,7 @@ class Player {
 
     constructor() {
         this.playerImage = new Image();
-        this.playerImage.src = 'assets/astronaut.png';
+        this.playerImage.src = 'assets/astronauta.png';
 
         // Direção: 1 = direita, -1 = esquerda
         this.direcao = 1;
@@ -17,7 +17,7 @@ class Player {
     height = 50;
     pos_x = 550;
     pos_y = 558;
-    speed = 6.5;
+    speed = 3;
     velocityY = 0;
     gravity = 0.2;
     jumpForce = 8;
