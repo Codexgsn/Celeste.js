@@ -97,6 +97,11 @@ fetch("./assets/fase1.json")
 
 document.addEventListener("keydown", (event) => {
     player.keys[event.key] = true;
+
+    // Atira ao pressionar a tecla F
+    if (event.key.toLowerCase() === "f" && !event.repeat) {
+        player.atirar();
+    }
 });
 
 document.addEventListener("keyup", (event) => {
@@ -118,6 +123,7 @@ function gameLoop(){
     }
 
     player.updatePlayer(platforms);
+    player.atualizarProjeteis();
     player.drawPlayer();
     requestAnimationFrame(gameLoop);
 }
