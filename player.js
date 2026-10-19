@@ -1,4 +1,3 @@
-
 class Player {
 
     constructor() {
@@ -52,37 +51,37 @@ class Player {
         let frameX = 0;
         let frameY = 80;
 
-        if (!this.onGround) {
+       if (!this.onGround) {
             // Quadro de pulo com propulsão nos pés
             frameX = 128;
             frameY = 0;
         } else if (andando) {
             // Alterna os quadros para simular caminhada
-            frameX = (Math.floor(this.pos_x / 8) % 2) * 64;
+            frameX = (Math.floor(this.pos_x / 8) % 2) * 60;
         }
-
         ctx.save();
 
-        // Espelha o astronauta quando olha para a esquerda
-        if (this.direcao === -1) {
+        // Espelha o astronauta quando ele deve olhar para a direita
+        if (this.direcao === 1) {
             ctx.translate(this.pos_x + this.width, this.pos_y);
             ctx.scale(-1, 1);
 
             ctx.drawImage(
                 this.playerImage,
-                frameX, frameY, 64, 80,
+                frameX, frameY, 60, 80,
                 0, 0, this.width, this.height
             );
         } else {
-            ctx.drawImage(
-                this.playerImage,
-                frameX, frameY, 64, 80,
-                this.pos_x, this.pos_y,
-                this.width, this.height
-            );
-        }
+            // Desenha a imagem original, voltada para a esquerda
+             ctx.drawImage(
+            this.playerImage,
+            frameX, frameY, 60, 80,
+            this.pos_x, this.pos_y,
+            this.width, this.height
+        );
+}
 
-        ctx.restore();
+ctx.restore();
 
         // Desenha os projéteis na cor azul
         ctx.fillStyle = "#00BFFF";
