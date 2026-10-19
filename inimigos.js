@@ -1,0 +1,182 @@
+// Os inimigos são desenhados num canvas próprio, por cima do canvas do jogo
+const canvasInimigos = document.getElementById("canvasInimigos");
+canvasInimigos.width = 1200;
+canvasInimigos.height = 720;
+const ctxInimigos = canvasInimigos.getContext("2d");
+
+const spriteVerde = new Image();
+spriteVerde.src = "assets/monstro_verde.png";
+
+const spriteRoxo = new Image();
+spriteRoxo.src = "assets/monstro_roxo.png";
+
+// Tipos de monstro:
+// "andador"  -> anda de um lado pro outro na plataforma
+// "saltador" -> pula na direção do jogador
+// "voador"   -> voa de um lado pro outro subindo e descendo
+class Monstro {
+    constructor(tipo, x, chao, limiteEsquerdo, limiteDireito) {
+        this.tipo = tipo;
+        this.largura = 52;
+        this.altura = 65;
+        this.posicaoX = x;
+        this.posicaoY = chao - this.altura; // deixa os pés no chão
+        this.chao = this.posicaoY;
+        this.limiteEsquerdo = limiteEsquerdo;
+        this.limiteDireito = limiteDireito;
+        this.direcao = 1; // 1 = direita, -1 = esquerda
+        this.velocidadeY = 0;
+        this.tempo = 0; // conta os quadros
+        this.vivo = true;
+    }
+
+    // Anda e vira quando chega na borda da plataforma
+    andar() {
+        this.posicaoX += this.direcao * 1.2;
+
+        if (this.posicaoX < this.limiteEsquerdo) this.direcao = 1;
+        if (this.posicaoX + this.largura > this.limiteDireito) this.direcao = -1;
+    }
+
+    update() {
+        this.tempo++;
+
+        if (this.tipo === "saltador") {
+            if (this.posicaoY < this.chao) {
+                // No ar: anda e cai
+                this.andar();
+                this.velocidadeY += 0.45;
+            } else if (this.tempo % 75 === 0) {
+                // No chão: a cada 75 quadros pula na direção do jogador
+                if (player.pos_x < this.posicaoX) {
+                    this.direcao = -1;
+                } else {
+                    this.direcao = 1;
+                }
+                this.velocidadeY = -8;
+            }
+
+            this.posicaoY += this.velocidadeY;
+
+            // Voltou pro chão
+            if (this.posicaoY > this.chao) {
+                this.posicaoY = this.chao;
+                this.velocidadeY = 0;
+            }
+        } else {
+            // Andador e voador viram sozinhos de vez em quando
+            if (Math.random() < 0.005) this.direcao *= -1;
+            this.andar();
+        }
+
+        if (this.tipo === "voador") {
+            this.posicaoY = this.chao + Math.sin(this.tempo / 38) * 35; // sobe e desce
+        }
+    }
+
+    draw() {
+        // A imagem tem 4 colunas e 2 linhas de quadros (64 x 80 cada)
+        let coluna = Math.floor(this.tempo / 14) % 3; // anima os quadros 0, 1 e 2
+        if (this.tipo === "saltador") coluna = 3; // quadro de boca aberta
+
+        let linha = 0; // linha de cima olha pra direita
+        if (this.direcao === -1) linha = 1; // linha de baixo olha pra esquerda
+
+        let sprite = spriteVerde;
+        if (this.tipo === "voador") sprite = spriteRoxo;
+
+        ctxInimigos.drawImage(
+            sprite,
+            coluna * 64, linha * 80, 64, 80,
+            this.posicaoX, this.posicaoY, this.largura, this.altura
+        );
+    }
+}
+
+// Monstros da fase.
+// Valores: tipo, x inicial, y do chão, limite esquerdo e limite direito da plataforma.
+let monstros = [
+    // chão
+    new Monstro("andador", 226, 608, 86, 445),
+    new Monstro("andador", 872, 608, 718, 1077),
+    new Monstro("saltador", 560, 608, 467, 682),
+
+    // plataformas
+    new Monstro("andador", 226, 490, 104, 352),
+    new Monstro("saltador", 467, 396, 360, 606),
+    new Monstro("andador", 765, 325, 657, 914),
+    new Monstro("saltador", 1005, 467, 894, 1128),
+    new Monstro("andador", 298, 253, 190, 422),
+
+    // voadores (aqui o y é a altura do voo)
+    new Monstro("voador", 228, 218, 36, 467),
+    new Monstro("voador", 659, 233, 431, 897),
+    new Monstro("voador", 1018, 295, 825, 1163)
+];
+
+let boss = null; // aparece quando todos os monstros morrem
+
+// O tiro acerta quando o ponto dele está dentro do retângulo do inimigo
+function acertou(tiro, inimigo) {
+    return tiro.x > inimigo.posicaoX &&
+        tiro.x < inimigo.posicaoX + inimigo.largura &&
+        tiro.y > inimigo.posicaoY &&
+        tiro.y < inimigo.posicaoY + inimigo.altura;
+}
+
+// Loop dos inimigos: roda junto com o loop do jogo
+function loopInimigos() {
+    ctxInimigos.clearRect(0, 0, 1200, 720);
+
+    // Só funciona depois de apertar Enter e a fase carregar (variáveis do script.js)
+    if (gameStatus === "playing" && phaseReady) {
+        for (const monstro of monstros) {
+            monstro.update();
+            monstro.draw();
+        }
+
+        if (boss !== null) {
+            boss.update();
+            boss.draw();
+        }
+
+        // Confere se os tiros do jogador acertaram alguém
+        for (const tiro of player.projeteis) {
+            for (const monstro of monstros) {
+                if (acertou(tiro, monstro)) {
+                    monstro.vivo = false;
+                    tiro.usado = true;
+                }
+            }
+
+            if (boss !== null && boss.vivo && acertou(tiro, boss)) {
+                boss.levarDano();
+                tiro.usado = true;
+            }
+        }
+
+        // Tira os monstros mortos e os tiros que já acertaram
+        monstros = monstros.filter(monstro => monstro.vivo);
+        player.projeteis = player.projeteis.filter(tiro => !tiro.usado);
+
+        if (monstros.length === 0 && boss === null) {
+            boss = new Boss();
+        }
+
+        // Texto no canto da tela
+        ctxInimigos.fillStyle = "white";
+        ctxInimigos.font = "20px monospace";
+        if (boss === null) {
+            ctxInimigos.fillText("Inimigos: " + monstros.length, 20, 30);
+        } else if (boss.vivo) {
+            ctxInimigos.fillText("Vida do boss: " + boss.vida, 20, 30);
+        } else {
+            ctxInimigos.fillText("Boss derrotado!", 20, 30);
+        }
+    }
+
+    requestAnimationFrame(loopInimigos);
+}
+
+// Começa o loop quando a página terminar de carregar
+window.addEventListener("load", loopInimigos);
