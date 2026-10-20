@@ -97,21 +97,17 @@ fetch("./assets/fase1.json")
 
     document.addEventListener("keydown", (event) => {
     player.keys[event.key] = true;
-
-
-});
-
-document.addEventListener("mousedown", (event) => {
-    // Atirar com o botão esquerdo do mouse
-    if (event.button === 0) {
+    
+    // Atirar com o botão Enter
+    if (event.key === "Enter") {
         event.preventDefault();
         player.atirar();
     }
-});
+    });
 
-document.addEventListener("keyup", (event) => {
+    document.addEventListener("keyup", (event) => {
     player.keys[event.key] = false;
-})
+    })
 
 // função que faz o gameloop
 function gameLoop(){
