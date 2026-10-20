@@ -95,18 +95,15 @@ fetch("./assets/fase1.json")
 
 
 
-/*document.addEventListener("keydown", (event) => {
+    document.addEventListener("keydown", (event) => {
     player.keys[event.key] = true;
 
-    // Atirar com a tecla F
-    if (event.key.toLowerCase() === "f" && !event.repeat) {
-        player.atirar();
-    }
-});*/
+
+});
 
 document.addEventListener("mousedown", (event) => {
-    // Atirar com o botão direito do mouse
-    if (event.button === 2) {
+    // Atirar com o botão esquerdo do mouse
+    if (event.button === 0) {
         event.preventDefault();
         player.atirar();
     }
