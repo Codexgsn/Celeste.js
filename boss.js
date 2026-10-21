@@ -1,61 +1,60 @@
-// Boss: um monstro roxo grande que anda no alto e atira no jogador
+// Boss: um monstro roxo grande que aparece quando todos os monstros morrem.
+// Ele repete: voa de um lado pro outro cuspindo fogo no jogador,
+// depois para onde está e cospe círculos de fogo.
+// Com 1 de vida ele para e cospe círculos de fogo sem parar.
 class Boss {
     constructor() {
         this.largura = 120;
         this.altura = 150;
-        this.posicaoX = 540;
-        this.posicaoY = 130;
+        this.posicaoX = 540; // meio da tela
+        this.posicaoY = 150;
         this.vida = 15;
         this.vivo = true;
         this.direcao = 1; // 1 = direita, -1 = esquerda
-        this.tempo = 0; // conta os quadros
-        this.tiros = [];
+        this.tempo = 0; // quadros desde que o boss foi criado
     }
 
-    update() {
+    atualizar() {
         if (!this.vivo) return;
         this.tempo++;
 
-        // Quanto menos vida, mais rápido ele anda e atira
-        let velocidade = 1.5;
-        let tempoEntreTiros = 150;
-        if (this.vida <= 10) {
-            velocidade = 2;
-            tempoEntreTiros = 120;
+        // Nos primeiros 240 quadros ele só está aparecendo
+        if (this.tempo < 240) return;
+
+        const raiva = 15 - this.vida; // cresce a cada dano: fica mais rápido
+
+        if (this.vida === 1) {
+            // Última vida: para e cospe círculos de fogo sem parar
+            if (this.tempo % 90 === 0) this.circuloDeFogo(0.4);
+        } else if (this.tempo % 800 < 400) {
+            // 400 quadros voando de um lado pro outro
+            this.posicaoX += this.direcao * (1 + raiva * 0.1);
+            if (this.posicaoX < 0) this.direcao = 1;
+            if (this.posicaoX + this.largura > 1200) this.direcao = -1;
+
+            // Cospe fogo no jogador (0.5 = velocidade do fogo)
+            if (this.tempo % (200 - raiva * 8) === 0) {
+                cuspirFogoNoJogador(this, 0.5);
+            }
+        } else if (this.tempo % (160 - raiva * 6) === 0) {
+            // 400 quadros parado onde está, cuspindo círculos de fogo
+            this.circuloDeFogo(0.5);
         }
-        if (this.vida <= 5) {
-            velocidade = 2.5;
-            tempoEntreTiros = 90;
-        }
-
-        // Anda de um lado pro outro da tela
-        this.posicaoX += this.direcao * velocidade;
-        if (this.posicaoX < 0) this.direcao = 1;
-        if (this.posicaoX + this.largura > 1200) this.direcao = -1;
-
-        if (this.tempo % tempoEntreTiros === 0) this.atirar();
-
-        // Move os tiros
-        for (const tiro of this.tiros) {
-            tiro.x += tiro.velocidadeX;
-            tiro.y += tiro.velocidadeY;
-        }
-
-        // Tira os tiros que saíram da tela
-        this.tiros = this.tiros.filter(tiro => tiro.x > 0 && tiro.x < 1200 && tiro.y > 0 && tiro.y < 720);
     }
 
-    // O tiro sai do meio do boss e vai em linha reta até o meio do jogador
-    atirar() {
-        const x = this.posicaoX + this.largura / 2;
-        const y = this.posicaoY + this.altura / 2;
+    // Cospe 16 bolas de fogo em círculo, saindo do meio do boss
+    // velocidade = quantos px cada bola anda por quadro
+    circuloDeFogo(velocidade) {
+        for (let bola = 0; bola < 16; bola++) {
+            const angulo = bola * Math.PI / 8; // 16 bolas = uma a cada 22,5 graus
 
-        this.tiros.push({
-            x: x,
-            y: y,
-            velocidadeX: (player.pos_x + player.width / 2 - x) / 100, // chega em 100 quadros
-            velocidadeY: (player.pos_y + player.height / 2 - y) / 100
-        });
+            fogos.push({
+                x: this.posicaoX + this.largura / 2,
+                y: this.posicaoY + this.altura / 2,
+                velocidadeX: Math.cos(angulo) * velocidade,
+                velocidadeY: Math.sin(angulo) * velocidade
+            });
+        }
     }
 
     // Chamado quando o tiro do jogador acerta o boss
@@ -63,28 +62,37 @@ class Boss {
         this.vida--;
         if (this.vida === 0) {
             this.vivo = false;
-            this.tiros = [];
+            fogos = []; // o fogo some junto com o boss
         }
     }
 
-    draw() {
-        if (!this.vivo) return;
+    desenhar() {
+        if (!this.vivo || this.tempo < 90) return;
+
+        // Primeiro aparece a barra de vida, no alto da tela
+        contextoInimigos.fillStyle = "black";
+        contextoInimigos.fillRect(400, 50, 400, 20);
+        contextoInimigos.fillStyle = "red";
+        contextoInimigos.fillRect(400, 50, 400 * this.vida / 15, 20); // tamanho conforme a vida
+        contextoInimigos.strokeStyle = "white";
+        contextoInimigos.strokeRect(400, 50, 400, 20);
+
+        // Logo depois aparece o boss, começando borrado e ficando nítido
+        if (this.tempo < 150) return;
+        if (this.tempo < 240) {
+            contextoInimigos.filter = "blur(" + (240 - this.tempo) / 4 + "px)";
+        }
 
         // Usa a imagem do monstro roxo (do inimigos.js), só que maior
         const coluna = Math.floor(this.tempo / 16) % 4;
-        let linha = 0; // linha de cima olha pra direita
-        if (this.direcao === -1) linha = 1; // linha de baixo olha pra esquerda
+        const linha = this.direcao === -1 ? 1 : 0; // esquerda ou direita
 
-        ctxInimigos.drawImage(
-            spriteRoxo,
+        contextoInimigos.drawImage(
+            imagemRoxa,
             coluna * 64, linha * 80, 64, 80,
             this.posicaoX, this.posicaoY, this.largura, this.altura
         );
 
-        // Tiros: quadradinhos laranja
-        ctxInimigos.fillStyle = "orange";
-        for (const tiro of this.tiros) {
-            ctxInimigos.fillRect(tiro.x - 7, tiro.y - 7, 14, 14);
-        }
+        contextoInimigos.filter = "none"; // tira o borrão pro resto do desenho
     }
 }
