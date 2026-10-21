@@ -1,7 +1,6 @@
 // Boss: um monstro roxo grande que aparece quando todos os monstros morrem.
-// Ele repete: voa de um lado pro outro cuspindo fogo no jogador,
-// depois para onde está e cospe círculos de fogo.
-// Com 1 de vida ele para e cospe círculos de fogo sem parar.
+// Voa de um lado pro outro, alternando fogo no jogador e círculos de fogo.
+// Com 1 de vida ele continua voando e usa apenas círculos de fogo.
 class Boss {
     constructor() {
         this.largura = 120;
@@ -23,21 +22,21 @@ class Boss {
 
         const raiva = 15 - this.vida; // cresce a cada dano: fica mais rápido
 
+        // Continua voando durante qualquer ataque
+        this.posicaoX += this.direcao * (1 + raiva * 0.1);
+        if (this.posicaoX < 0) this.direcao = 1;
+        if (this.posicaoX + this.largura > 1200) this.direcao = -1;
+
         if (this.vida === 1) {
-            // Última vida: para e cospe círculos de fogo sem parar
+            // Última vida: cospe apenas círculos de fogo
             if (this.tempo % 90 === 0) this.circuloDeFogo(0.4);
         } else if (this.tempo % 800 < 400) {
-            // 400 quadros voando de um lado pro outro
-            this.posicaoX += this.direcao * (1 + raiva * 0.1);
-            if (this.posicaoX < 0) this.direcao = 1;
-            if (this.posicaoX + this.largura > 1200) this.direcao = -1;
-
             // Cospe fogo no jogador (0.5 = velocidade do fogo)
             if (this.tempo % (200 - raiva * 8) === 0) {
                 cuspirFogoNoJogador(this, 0.5);
             }
         } else if (this.tempo % (160 - raiva * 6) === 0) {
-            // 400 quadros parado onde está, cuspindo círculos de fogo
+            // Nos outros 400 quadros, cospe círculos de fogo
             this.circuloDeFogo(0.5);
         }
     }
