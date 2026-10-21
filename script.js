@@ -44,24 +44,17 @@ function draw(){
 
 
 
-// comando para iniciar o jogo ao clicar enter
+// comando para iniciar o jogo ou reiniciar ao clicar enter
 document.addEventListener("keydown", (event) => {
-    if(event.key === "Enter" && gameStatus === "menu"){
-        gameStatus = "playing";
-        startGame();
+    if (event.key === "Enter") {
+        if (gameStatus === "menu") {
+            gameStatus = "playing";
+            startGame();
+        } else if (gameStatus === "gameover" || gameStatus === "vitoria") {
+            location.reload(); // Recarrega e volta ao início na vitória ou na derrota!
+        }
     }
-
-        // Se estiver em game over e apertar enter, reinicia
-    if (event.key === "Enter" && gameStatus === "gameover") {
-        player.vidas = 3;
-        player.pos_x = 550;
-        player.pos_y = 558;
-        player.tempoInvulneravel = 0;
-        gameStatus = "playing";
-        gameLoop();
-    }
-
-})
+});
 
 
 
@@ -120,6 +113,16 @@ fetch("./assets/fase1.json")
     player.keys[event.key] = false;
     })
 
+// Função da tela de vitoria
+function desenharVitoria() {
+// implementar a tela de vitória aqui <== PEDRO
+}
+
+// Função da tela de game over
+function desenharGameOver() {
+// implementar a tela de game over aqui <== PEDRO
+}
+
 // Função que faz o gameloop
 function gameLoop(){
     ctx.clearRect( 0, 0, canvas.width, canvas.height);
@@ -137,6 +140,11 @@ function gameLoop(){
     if(gameStatus === "gameover"){ 
         desenharGameOver(); // Chama tela de game over
         return; // Sai do gameLoop para não continuar atualizando o jogo
+    }
+
+    if (gameStatus === "vitoria") {
+        desenharVitoria(); // Chama tela de vitória
+        return;
     }
 
     player.updatePlayer(platforms); // Atualiza a posição do jogador e verifica colisões

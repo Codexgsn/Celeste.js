@@ -201,7 +201,7 @@ function animarInimigos() {
         if (!chefe) {
             contextoInimigos.fillText("Inimigos: " + monstros.length, 20, 30);
         } else if (!chefe.vivo) {
-            contextoInimigos.fillText("Boss derrotado!", 20, 30);
+            gameStatus = "vitoria"; // <--- Se o chefe morrer, o jogador vence!
         }
 
         // Colisão do jogador com monstros
