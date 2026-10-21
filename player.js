@@ -1,7 +1,7 @@
 class Player {
 
     constructor() {
-        this.playerImage = new Image();
+        this.playerImage = new Image(); // Cria um objeto de imagem para o jogador
         this.playerImage.src = 'assets/astronauta.png';
 
         // Direção: 1 = direita, -1 = esquerda
@@ -12,22 +12,24 @@ class Player {
     }
 
     // Informações do jogador
-    width = 50;
-    height = 50;
-    pos_x = 550;
-    pos_y = 558;
-    speed = 3;
-    velocityY = 0;
-    gravity = 0.2;
-    jumpForce = 8;
-    onGround = true;
-    jumpWasDown = false;
-    keys = {};
+    width = 50; // Largura do jogador
+    height = 50; // Altura do jogador
+    pos_x = 550; // Posição horizontal do jogador
+    pos_y = 558; // Posição vertical do jogador
+    speed = 2; // Velocidade de movimento do jogador
+    velocityY = 0; // Velocidade vertical do jogador
+    gravity = 0.2; // Gravidade aplicada ao jogador
+    jumpForce = 8; // Força do pulo do jogador
+    onGround = true; // Indica se o jogador está no chão
+    jumpWasDown = false; // Indica se a tecla de pulo estava pressionada na atualização anterior
+    keys = {}; // Armazena o estado das teclas pressionadas
 
-    // Desenha o astronauta conforme seu movimento
+    // Desenha o jogador no canvas
     drawPlayer() {
         if (!this.playerImage.complete) {
+            // Se a imagem ainda não foi carregada, desenha um retângulo vermelho como marcador
             ctx.fillStyle = "red";
+            // Desenha o retângulo no lugar do jogador
             ctx.fillRect(
                 this.pos_x, this.pos_y,
                 this.width, this.height
@@ -41,7 +43,7 @@ class Player {
         } else if (this.keys["ArrowLeft"] || this.keys["a"]) {
             this.direcao = -1;
         }
-
+        // Verifica se o jogador está andando (pressionando as teclas de movimento)
         const andando =
             this.keys["ArrowRight"] || this.keys["d"] ||
             this.keys["ArrowLeft"] || this.keys["a"];
@@ -51,27 +53,33 @@ class Player {
         let frameX = 0;
         let frameY = 80;
 
+        // Se o jogador estiver no ar, usa o quadro de pulo
        if (!this.onGround) {
-            // Quadro de pulo com propulsão nos pés
-            frameX = 128;
-            frameY = 0;
+            frameX = 200; // Sem animacao do fogo = 128            
+            frameY = 80; //Sem animacao do fogo = 80
+            // Se o jogador estiver andando, alterna os quadros para simular caminhada
         } else if (andando) {
             // Alterna os quadros para simular caminhada
-            frameX = (Math.floor(this.pos_x / 8) % 2) * 60;
+            frameX = (Math.floor(this.pos_x / 20) % 2) * 60;
         }
         ctx.save();
 
         // Espelha o astronauta quando ele deve olhar para a direita
         if (this.direcao === 1) {
+            // Espelha a imagem horizontalmente
             ctx.translate(this.pos_x + this.width, this.pos_y);
+            // Inverte a escala horizontal
             ctx.scale(-1, 1);
-
+            //
             ctx.drawImage(
+                // Desenha a imagem espelhada, voltada para a direita
                 this.playerImage,
                 frameX, frameY, 60, 80,
                 0, 0, this.width, this.height
             );
-        } else {
+        } 
+        // Desenha a imagem original, voltada para a esquerda
+        if(this.direcao === -1){
             // Desenha a imagem original, voltada para a esquerda
              ctx.drawImage(
             this.playerImage,
@@ -80,46 +88,48 @@ class Player {
             this.width, this.height
         );
 }
-
+// Restaura o estado do contexto para evitar que a escala invertida afete outros elementos
 ctx.restore();
 
         // Desenha os projéteis na cor azul
         ctx.fillStyle = "#00BFFF";
-
+        // Desenha cada projétil como um círculo
         for (const projetil of this.projeteis) {
-            ctx.beginPath();
-            ctx.arc(
-                projetil.x, projetil.y,
-                5, 0, Math.PI * 2
+            ctx.beginPath();// Inicia um novo caminho para o círculo do projétil
+            ctx.arc( 
+                projetil.x, projetil.y, 
+                4, 0, Math.PI * 2 // Desenha um círculo completo (360 graus) para representar o projétil
             );
-            ctx.fill();
+            ctx.fill(); // Preenche o círculo do projétil com a cor definida anteriormente
         }
     }
 
     // Comando de disparo: deverá ser chamado pelo controle do jogo
     atirar() {
+        // Adiciona um novo projétil à lista de projéteis do jogador
         this.projeteis.push({
-            x: this.direcao === 1
-                ? this.pos_x + this.width
-                : this.pos_x,
-            y: this.pos_y + this.height / 2,
-            velocidade: 10 * this.direcao
+            x: this.direcao === 1 // Se a direção for 1 (direita), o projétil é disparado a partir da borda direita do jogador
+                ? this.pos_x + this.width // Se a direção for -1 (esquerda), o projétil é disparado a partir da borda esquerda do jogador
+                : this.pos_x, // Posição horizontal do projétil
+            y: this.pos_y + this.height / 2, // Posição vertical do projétil (metade da altura do jogador)
+            velocidade: 7 * this.direcao
         });
     }
 
     // Atualiza a posição dos projéteis
     atualizarProjeteis() {
+        // Com base na sua velocidade
         for (const projetil of this.projeteis) {
             projetil.x += projetil.velocidade;
         }
-
+        // Remove projéteis que saíram da tela
         this.projeteis = this.projeteis.filter(
             projetil =>
-                projetil.x >= 0 &&
-                projetil.x <= canvas.width
+                projetil.x >= 0 && // Mantém apenas os projéteis que estão dentro da largura do canvas
+                projetil.x <= canvas.width // Mantém apenas os projéteis que estão dentro da largura do canvas
         );
     }
-
+    // Fim da Parte de Luiz Henrique
 
     // função que faz o jogador andar e pular pelo canvas
     updatePlayer(platforms){
