@@ -12,19 +12,19 @@ const roundImage = new Image();
 menuImage.src = "./assets/menu.png";
 roundImage.src = "./assets/cenario.png";
 
-
-
+// nesta parte, criamos um objeto de imagem que pega a imagem da vitória e do game over
+const vitoriaBG = new Image();
+const gameOverBG = new Image();
+vitoriaBG.src = "./assets/VITORIA.png";
+gameOverBG.src = "./assets/GAME OVER.png";
 
 // aqui é o status padrão sempre que iniciar o site (aparecendo o menu)
 let gameStatus = "menu";
 
-
-
+// aqui esperamos a imagem carregar para a função rodar corretamente
 menuImage.onload = function (){
     draw();
 }
-
-
 
 // Essa função desenha a imagem cobrindo todo o canvas
 function draw(){
@@ -115,12 +115,28 @@ fetch("./assets/fase1.json")
 
 // Função da tela de vitoria
 function desenharVitoria() {
-// implementar a tela de vitória aqui <== PEDRO
+    ctx.clearRect(0,0,canvas.width, canvas.height)
+
+    ctx.drawImage(
+        vitoriaBG,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    )
 }
 
 // Função da tela de game over
 function desenharGameOver() {
-// implementar a tela de game over aqui <== PEDRO
+    ctx.clearRect(0,0,canvas.width, canvas.height)
+
+    ctx.drawImage(
+        gameOverBG,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    )
 }
 
 // Função que faz o gameloop
