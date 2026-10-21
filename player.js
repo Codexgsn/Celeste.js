@@ -9,6 +9,18 @@ class Player {
 
         // Projéteis disparados pelo jogador
         this.projeteis = [];
+
+        // Carrega as imagens dos corações
+        this.heartFull = new Image();
+        this.heartFull.src = 'assets/heart_full.png';
+        this.heartEmpty = new Image();
+        this.heartEmpty.src = 'assets/heart_empty.png';
+
+        // Sistema de Vidas
+        this.maxVidas = 3;
+        this.vidas = 3;
+        this.tempoInvulneravel = 0; // Frames de invulnerabilidade após levar dano
+
     }
 
     // Informações do jogador
@@ -35,6 +47,13 @@ class Player {
                 this.width, this.height
             );
             return;
+        }
+
+        // Se estiver invulnerável, pisca ficando semitransparente
+        if (this.tempoInvulneravel > 0 && Math.floor(this.tempoInvulneravel / 6) % 2 === 0) {
+            ctx.globalAlpha = 0.4;
+        } else {
+            ctx.globalAlpha = 1.0;
         }
 
         // Identifica a direção pelas teclas pressionadas
@@ -90,7 +109,7 @@ class Player {
 }
 // Restaura o estado do contexto para evitar que a escala invertida afete outros elementos
 ctx.restore();
-
+ctx.globalAlpha = 1.0; // <--- Restaura a opacidade normal para os projéteis e corações!
         // Desenha os projéteis na cor azul
         ctx.fillStyle = "#00BFFF";
         // Desenha cada projétil como um círculo
@@ -152,6 +171,10 @@ ctx.restore();
 
         this.jumpWasDown = jumpKeyDown;
 
+        if (this.tempoInvulneravel > 0) {
+        this.tempoInvulneravel--;
+}
+
         // Mantém o jogador dentro das bordas do canvas.
         this.pos_x = Math.max(0, Math.min(this.pos_x, canvas.width - this.width));
 
@@ -177,6 +200,46 @@ ctx.restore();
                 this.pos_y = platform.y - this.height;
                 this.velocityY = 0;
                 this.onGround = true;
+            }
+        }
+
+        
+    }
+
+        levarDano() {
+        if (this.tempoInvulneravel > 0 || this.vidas <= 0) return;
+
+        this.vidas--;
+        this.tempoInvulneravel = 60; // Fica cerca de 1 segundo invulnerável (piscando)
+
+        if (this.vidas <= 0) {
+            console.log("Game Over!");
+            gameStatus = "gameover"; 
+            // Aqui você pode reiniciar a fase ou mudar o status do jogo
+        }
+    }
+
+
+
+    desenharVidas(contexto) {
+        const tamanhoCoracao = 32; // Ajuste a largura/altura desejada
+        const margem = 10;
+        const larguraTotal = this.maxVidas * tamanhoCoracao + (this.maxVidas - 1) * margem;
+        const inicioX = (contexto.canvas.width - larguraTotal) / 2;
+        const inicioY = 20;
+
+        for (let i = 0; i < this.maxVidas; i++) {
+            // Se o índice atual for menor que as vidas restantes, usa o coração cheio
+            const img = (i < this.vidas) ? this.heartFull : this.heartEmpty;
+
+            if (img.complete) {
+                contexto.drawImage(
+                    img,
+                    inicioX + i * (tamanhoCoracao + margem),
+                    inicioY,
+                    tamanhoCoracao,
+                    tamanhoCoracao
+                );
             }
         }
     }

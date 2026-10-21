@@ -26,7 +26,7 @@ menuImage.onload = function (){
 
 
 
-// essa função desenha a imagem cobrindo todo o canvas
+// Essa função desenha a imagem cobrindo todo o canvas
 function draw(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -50,6 +50,17 @@ document.addEventListener("keydown", (event) => {
         gameStatus = "playing";
         startGame();
     }
+
+        // Se estiver em game over e apertar enter, reinicia
+    if (event.key === "Enter" && gameStatus === "gameover") {
+        player.vidas = 3;
+        player.pos_x = 550;
+        player.pos_y = 558;
+        player.tempoInvulneravel = 0;
+        gameStatus = "playing";
+        gameLoop();
+    }
+
 })
 
 
@@ -109,7 +120,7 @@ fetch("./assets/fase1.json")
     player.keys[event.key] = false;
     })
 
-// função que faz o gameloop
+// Função que faz o gameloop
 function gameLoop(){
     ctx.clearRect( 0, 0, canvas.width, canvas.height);
 
@@ -123,17 +134,23 @@ function gameLoop(){
         )
     }
 
-    player.updatePlayer(platforms);
-    player.atualizarProjeteis();
-    player.drawPlayer();
-    requestAnimationFrame(gameLoop);
+    if(gameStatus === "gameover"){ 
+        desenharGameOver(); // Chama tela de game over
+        return; // Sai do gameLoop para não continuar atualizando o jogo
+    }
+
+    player.updatePlayer(platforms); // Atualiza a posição do jogador e verifica colisões
+    player.atualizarProjeteis(); // Atualiza a posição dos projéteis do jogador
+    player.drawPlayer(); // Desenha o jogador no canvas
+    player.desenharVidas(ctx); // <--- Desenha os corações na tela
+    requestAnimationFrame(gameLoop); // Chama o gameLoop novamente para o próximo frame
 }
 
 
 
 
 
-// função que faz o jogo iniciar
+// Função que faz o jogo iniciar
 function startGame(){
     if(gameStatus === "playing" && phaseReady){
         gameLoop();

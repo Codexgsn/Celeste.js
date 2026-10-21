@@ -203,6 +203,43 @@ function animarInimigos() {
         } else if (!chefe.vivo) {
             contextoInimigos.fillText("Boss derrotado!", 20, 30);
         }
+
+        // Colisão do jogador com monstros
+        for (const monstro of monstros) {
+            if (
+                player.pos_x < monstro.posicaoX + monstro.largura &&
+                player.pos_x + player.width > monstro.posicaoX &&
+                player.pos_y < monstro.posicaoY + monstro.altura &&
+                player.pos_y + player.height > monstro.posicaoY
+            ) {
+                player.levarDano();
+            }
+        }
+
+        // Colisão do jogador com as bolas de fogo
+        for (const fogo of fogos) {
+            if (
+                fogo.x > player.pos_x &&
+                fogo.x < player.pos_x + player.width &&
+                fogo.y > player.pos_y &&
+                fogo.y < player.pos_y + player.height
+            ) {
+                player.levarDano();
+                fogo.atingiu = true; // marca a bola de fogo como atingida para removê-la
+            }
+        }
+
+        fogos = fogos.filter(fogo => !fogo.atingiu); // remove as bolas de fogo que atingiram o jogador
+
+        // Colisão com o chefe (se ativo)
+        if (chefe && chefe.vivo &&
+            player.pos_x < chefe.posicaoX + chefe.largura &&
+            player.pos_x + player.width > chefe.posicaoX &&
+            player.pos_y < chefe.posicaoY + chefe.altura &&
+            player.pos_y + player.height > chefe.posicaoY
+        ) {
+            player.levarDano();
+        }   
     }
 
     requestAnimationFrame(animarInimigos);
